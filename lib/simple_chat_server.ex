@@ -6,6 +6,7 @@ defmodule SimpleChatServer do
     name = IO.gets("Enter your name to connect: ")
     |> String.trim()
     |> String.trim_trailing("\n")
+    |> String.capitalize()
     |> connect()
     |> user_action()
   end
@@ -33,7 +34,11 @@ defmodule SimpleChatServer do
     IO.puts "Enter exit if you want to disconnect"
     IO.puts "Enter write if you want to send message to all the users"
 
-    action = IO.gets("")|>String.trim() |> String.trim_trailing("\n")
+    action = IO.gets("")
+    |>String.trim()
+    |> String.trim_trailing("\n")
+    |> String.downcase()
+
     case action do
       "exit" -> disconnect(name)
       "write" ->
