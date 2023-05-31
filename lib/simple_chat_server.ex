@@ -33,7 +33,10 @@ defmodule SimpleChatServer do
   def user_action(name)do
     IO.puts "Enter exit if you want to disconnect"
     IO.puts "Enter write if you want to send message to all the users"
+    process_user_input(name)
+ end
 
+  def process_user_input(name)do
     action = IO.gets("")
     |>String.trim()
     |> String.trim_trailing("\n")
@@ -43,10 +46,10 @@ defmodule SimpleChatServer do
       "exit" -> disconnect(name)
       "write" ->
         message = IO.gets("Write a message ") |>String.trim() |> String.trim_trailing("\n")
-        broadcast(message)
+        broadcast(message, name)
       _ -> IO.puts "You did not enter a valid command"
     end
- end
+  end
 
   #All the connected users
   def get_users()do
@@ -54,24 +57,27 @@ defmodule SimpleChatServer do
   end
 
   #Message sending functions
-  def broadcast(msg)do
+  def broadcast(msg, name)do
     valid_msg = is_binary(msg)
 
     cond do
-      valid_msg == true and String.trim(msg) != "" -> send_message(msg)
+      valid_msg == true and String.trim(msg) != "" -> send_message(msg, name)
       valid_msg == false ->IO.puts "Please enter a valid message"
       true -> IO.puts "You did not enter a valid message"
     end
   end
 
-  defp send_message(msg)do
+  defp send_message(msg, name)do
     Agent.update(__MODULE__, fn state -> %{state | messages: [msg | state.messages]}end)
-    send_to_all_users(msg)
+    send_to_all_users(msg, name)
   end
 
-  defp send_to_all_users(msg)do
+  defp send_to_all_users(msg, name)do
     Task.async_stream(get_users(), fn user -> IO.puts("Message: #{msg} sent to #{user}")end)
     |>Stream.run()
+
+    IO.puts "If you want to send another message type write or type exit to disconnect "
+    process_user_input(name)
   end
 
   #Disconnecting the user
